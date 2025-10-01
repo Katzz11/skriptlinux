@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# kasutaja lisamise skript
+# kasutaja nimi tuleb anda skripti parameetrina
+# skript peab antud nimega kasutajat lisama süsteemi
+# ning looma kasutajale vastava sisuga kodukataloogi
+# ja pakkuma sobilik koorik
+#
+# võime lisada ka kasutusjuhendi, kui midagi valesti käivitame või unustame kasutajanimi edasi anda
+# käsurea kaudu parameetrite arv on $# sees olev number, meie korral peab olema 1 parameeter - kasutajanimi
+# kui aga antud parameeter ei ole lisatud - tuleb juhendada kasutajat, kuidas skriptiga tööd teha
+if [ $# -ne 1 ]; then
+    echo "Kasutusjuhend: $0 kasutajanimi"
+else
+    # defineerime vajaliku muutuja kasutajanimi salvestamiseks
+    # kuna andmed edastatakse käsurealt skripti parameetrina, siis need on $1 $2 jne
+    # kasutajanimi on esimene parameeter, seega tuleb kasutada $1 muutujat
+    kasutajanimi=$1
+    
+    # kasutame kasutaja lisamise käsk vajalike võtmetega
+    useradd $kasutajanimi -m -s /bin/bash
+    kasu_tulemus=$?
+    
+    # põhimõtteliselt nagu kõik, aga kes teab kas antud käsu tulemus on ok või mitte
+    # seega kontrollime seda
+    # $? - viimane! käsu väljund staatus, 0 kui on korras, muu kui on probleem
+    if [ $kasu_tulemus -eq 0 ]; then
+        echo "Kasutaja nimega $kasutajanimi on lisatud süsteemi"
+        cat /etc/passwd | grep $kasutajanimi
+        ls -la /home/$kasutajanimi
+    else
+        echo "Probleem kasutaja $kasutajanimi lisamisega"
+        echo "Probleemikood on $kasu_tulemus"
+    fi
+fi
+# skripti õige kasutamise kontrolli lõpp
+
