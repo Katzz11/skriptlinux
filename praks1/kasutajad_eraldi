@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Kontroll, kas anti 2 parameetrit (kasutajad ja paroolid failid)
+if [ $# -ne 2 ]; then
+    echo "Kasutusjuhend: $0 kasutajad_fail paroolid_fail"
+    exit 1
+fi
+
+kasutajad_fail=$1
+paroolid_fail=$2
+
+# Kontrollime, et failide ridade arv oleks sama
+ridu_kasutajad=$(wc -l < $kasutajad_fail)
+ridu_paroolid=$(wc -l < $paroolid_fail)
+
+if [ $ridu_kasutajad -ne $ridu_paroolid ]; then
+    echo "Failide ridade arv ei klapi! Kontrolli faile."
+    exit 1
+fi
+
+# Loeme failid rida-realt ja lisame kasutajad koos paroolidega
+paste $kasutajad_fail $paroolid_fail | while IFS=$'\t' read kasutaja parool
+do
+    useradd $kasutaja -m -s /bin/bash
+    echo "$kasutaja:$parool" | chpasswd
+    echo "Lisatud kasutaja: $kasutaja parooliga $parool"
+done
