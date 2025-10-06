@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Kontroll, et anti 1 parameeter (kasutajate fail)
+if [ $# -ne 1 ]; then
+    echo "Kasutus: $0 kasutajad.txt"
+    exit 1
+fi
+
+kasutajad_fail="$1"
+logifail="loodud_kasutajad_paroolidega"
+
+# Kontroll, kas fail eksisteerib
+if [ ! -f "$kasutajad_fail" ]; then
+    echo "Faili $kasutajad_fail ei leitud!"
+    exit 2
+fi
+
+# Tühjendame vana logifaili
+> "$logifail"
+
+# Läbime kõik kasutajad
+while IFS= read -r kasutaja; do
+    if id "$kasutaja" &>/dev/null; then
+        echo "Kasutaja $kasutaja juba olemas, vahelejätmine."
+    else
+        # Genereeri 8 sümboli pikkune parool
+        parool=$(pwgen -s 8 1)
+
+        # Lisa kasutaja
+        useradd -m -s /bin/bash "$kasutaja"
+
+        # Määra parool
+        echo "$kasutaja:$parool" | chpasswd
+
+        # Salvesta logifaili
+        echo "$kasutaja:$parool" >> "$logifail"
+
+        echo "Lisatud kasutaja $kasutaja"
+    fi
+done < "$kasutajad_fail"
+
+echo "Kasutajad loodud. Paroolid on failis $logifail"
